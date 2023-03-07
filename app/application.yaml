@@ -1,0 +1,27 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    username: root
+    password: Qazwsx150508
+    url: jdbc:mysql://localhost:3306/search_engine?useSSL=false&requireSSL=false&allowPublicKeyRetrieval=true
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+    hibernate:
+      ddl-auto: update
+#    show-sql: true
+
+indexing-settings:
+  sites:
+    - url: https://nikoartgallery.com/
+      name: NikoArtGallery
+    - url: http://cimus.biz/
+      name: Climus
+#    - url: https://playback.ru/
+#      name: PlayBack.Ru
+#    - url: https://dombulgakova.ru/
+#      name: ДомБулгакова.ру
+
