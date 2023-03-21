@@ -15,13 +15,7 @@ public interface LemmaRepository extends CrudRepository<LemmaEntity, Integer> {
     @Query(value = "ALTER TABLE `lemmas` AUTO_INCREMENT = 0", nativeQuery = true)
     void resetIdOnLemmas();
 
-    @Modifying
-    @Query(value = "UPDATE `lemmas` SET `frequency` = :newValueFrequency WHERE `id` = :lemmaId", nativeQuery = true)
-    void updateFrequency(float newValueFrequency,int lemmaId);
-
-    @Query(value = "SELECT l FROM LemmaEntity l WHERE l.lemma = :lemma")
-    LemmaEntity findByLemma(String lemma);
-
     @Query(value = "SELECT * FROM `lemmas` WHERE `lemma` = :lemma AND `sites_id` = :siteId",nativeQuery = true)
     LemmaEntity findByLemmaAndSiteId(String lemma, int siteId);
+
 }

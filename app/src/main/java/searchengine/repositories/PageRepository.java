@@ -10,10 +10,18 @@ import searchengine.model.PageEntity;
 @Repository
 @Transactional
 public interface PageRepository extends CrudRepository<PageEntity,Integer> {
+
     @Modifying
     @Query(value = "ALTER TABLE `pages` AUTO_INCREMENT = 0", nativeQuery = true)
     void resetIdOnPage();
 
-    @Query(value = "SELECT p FROM PageEntity p WHERE p.path = :path")
-    PageEntity findByPath(String path);
+    @Query(value = "SELECT * FROM `pages` WHERE `path` = :path AND `sites_id` = :siteId", nativeQuery = true)
+    PageEntity findByPathAndSiteId(String path, int siteId);
+
+    @Query(value = "SELECT * FROM `pages` WHERE `id` = :id", nativeQuery = true)
+    PageEntity findPageById(int id);
+
+    @Modifying
+    @Query(value = "DELETE FROM `pages` WHERE `id` = :id",nativeQuery = true)
+    void deletePageById(int id);
 }

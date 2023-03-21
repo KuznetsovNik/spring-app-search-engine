@@ -1,13 +1,10 @@
 package searchengine.dto.statistics;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import searchengine.model.SiteEntity;
 import searchengine.model.Status;
-
 import java.time.LocalDateTime;
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 @Data
 public class SiteDto {
     private String url;
@@ -27,7 +24,6 @@ public class SiteDto {
         siteDto.setError(siteEntity.getLastError());
         siteDto.setPages(siteEntity.getIndexPage().size());
         siteDto.setLemmas(siteEntity.getIndexLemma().size());
-
         return siteDto;
     }
 }

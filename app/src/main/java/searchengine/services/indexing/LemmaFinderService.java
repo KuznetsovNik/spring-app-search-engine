@@ -1,7 +1,9 @@
 package searchengine.services.indexing;
 
-import searchengine.dto.indexing.LemmaResponse;
+import searchengine.dto.appResponse.AppResponse;
+import java.io.IOException;
 
 public interface LemmaFinderService {
-    LemmaResponse indexingPage(String url);
+
+    AppResponse indexingPage(String url) throws IOException, InterruptedException;
 }

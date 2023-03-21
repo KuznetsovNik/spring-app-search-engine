@@ -10,7 +10,6 @@ import searchengine.dto.statistics.TotalStatistics;
 import searchengine.model.SiteEntity;
 import searchengine.model.Status;
 import searchengine.repositories.SiteRepository;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -26,14 +25,13 @@ public class StatisticsServiceImpl implements StatisticsService {
         TotalStatistics total = new TotalStatistics();
         int countsSite = (int) siteRepository.count();
         total.setSites(countsSite);
+        total.setIndexing(false);
         Optional<SiteEntity> optionalSite = siteRepository.findById(countsSite);
-        boolean indexing = true;
         if (optionalSite.isPresent()) {
-            if (optionalSite.get().getStatus() != Status.INDEXING) {
-                indexing = false;
+            if (optionalSite.get().getStatus() == Status.INDEXING) {
+                total.setIndexing(true);
             }
         }
-        total.setIndexing(indexing);
 
         List<SiteDto> detailed = new ArrayList<>();
         int totalPages = 0;

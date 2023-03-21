@@ -15,6 +15,6 @@ public interface SiteRepository extends CrudRepository<SiteEntity,Integer> {
     @Query(value = "ALTER TABLE `sites` AUTO_INCREMENT = 0", nativeQuery = true)
     void resetIdOnSite();
 
-    @Query(value = "SELECT s FROM SiteEntity s WHERE s.url = :url", nativeQuery = true)
+    @Query(value = "SELECT s FROM SiteEntity s WHERE s.url = :url")
     SiteEntity findByUrl(String url);
 }

@@ -1,24 +1,25 @@
 package searchengine.services;
 
+import lombok.AllArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.RecursiveTask;
 
+@Log4j2
+@AllArgsConstructor
 public class LinksRecursiveTasking extends RecursiveTask<List<String>> {
     private String url;
-    boolean firstStart;
-    public LinksRecursiveTasking(String url, boolean firstStart) {
-        this.url = url;
-        this.firstStart = firstStart;
-    }
+    private boolean firstStart;
+
     @Override
     protected List<String> compute() {
-        List<String> result = new ArrayList<>();
+        List<String> listLinks = new ArrayList<>();
         List<LinksRecursiveTasking> linksTasking = new ArrayList<>();
-        List<String> linksList = new ArrayList<>();
         try {
-            result.add(url);
-            linksList.addAll(SiteParser.parserUtils(url,firstStart));
+            listLinks.add(url);
+            List<String> linksList = new ArrayList<>(SiteParser.parserUtils(url, firstStart));
             for (String thisUrl : linksList){
                 linksTasking.add(new LinksRecursiveTasking(thisUrl,firstStart));
             }
@@ -26,11 +27,11 @@ public class LinksRecursiveTasking extends RecursiveTask<List<String>> {
                 linksTasker.fork();
             }
             for (LinksRecursiveTasking linksTasker : linksTasking) {
-                result.addAll(linksTasker.join());
+                listLinks.addAll(linksTasker.join());
             }
-        }catch (Exception e){
-            e.printStackTrace();
+        }catch (Exception ex){
+            log.error(ex.getMessage());
         }
-        return result;
+        return listLinks;
     }
 }

@@ -1,28 +1,15 @@
 package searchengine.dto.search;
 
-import lombok.Data;
+import lombok.*;
+import java.util.List;
 
-@Data
+@NoArgsConstructor
+@Getter
+@Setter
 public class SearchResponse {
     private boolean result;
-    private String error;
     private int count;
-    private SearchData searchData;
+    private List<PageDto> data;
 }
-/**
- * 'result': true,
- * 	'count': 574,
- * 	'data': [
- *         {
- * 			"site": ...
- * 			"siteName": ...
- *          "uri": ...
- * 			"title": ...
- * 			"snippet": ...
- * 			"relevance": ...
- * },
- * ...
- * ]
- */
 
 

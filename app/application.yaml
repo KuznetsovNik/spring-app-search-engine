@@ -16,10 +16,10 @@ spring:
 
 indexing-settings:
   sites:
-    - url: https://nikoartgallery.com/
-      name: NikoArtGallery
     - url: http://cimus.biz/
       name: Climus
+    - url: https://nikoartgallery.com/
+      name: NikoArtGallery
 #    - url: https://playback.ru/
 #      name: PlayBack.Ru
 #    - url: https://dombulgakova.ru/

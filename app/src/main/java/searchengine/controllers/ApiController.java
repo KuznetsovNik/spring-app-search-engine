@@ -1,34 +1,30 @@
 package searchengine.controllers;
 
+import lombok.AllArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.*;
-import searchengine.dto.indexing.IndexingResponse;
-import searchengine.dto.indexing.LemmaResponse;
-import searchengine.dto.search.SearchResponse;
+import searchengine.dto.appResponse.FalseResponse;
 import searchengine.dto.statistics.StatisticsResponse;
 import searchengine.services.indexing.IndexingService;
 import searchengine.services.indexing.LemmaFinderService;
 import searchengine.services.search.SearchService;
 import searchengine.services.statistics.StatisticsService;
 
+@Log4j2
 @RestController
 @RequestMapping("/api")
+@AllArgsConstructor
 public class ApiController {
 
     private final StatisticsService statisticsService;
     private final IndexingService indexingService;
     private final LemmaFinderService lemmaFinderService;
     private final SearchService searchService;
-
-    public ApiController(StatisticsService statisticsService, IndexingService indexingService, LemmaFinderService lemmaFinderService, SearchService searchService) {
-        this.statisticsService = statisticsService;
-        this.indexingService = indexingService;
-        this.lemmaFinderService = lemmaFinderService;
-        this.searchService = searchService;
-    }
 
     @GetMapping("/statistics")
     public ResponseEntity<StatisticsResponse> statistics() {
@@ -37,48 +33,38 @@ public class ApiController {
 
     @GetMapping("/startIndexing")
     public ResponseEntity<?> startIndexing(){
-        IndexingResponse response = indexingService.startIndexing();
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return ResponseEntity.ok(indexingService.startIndexing());
     }
 
     @GetMapping("/stopIndexing")
-    public ResponseEntity<IndexingResponse> stopIndexing(){
-        try{
-            IndexingResponse response = indexingService.stopIndexing();
-                return new ResponseEntity<>(response, HttpStatus.OK);
-        }catch (Exception e){
-            e.printStackTrace();
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    public ResponseEntity<?> stopIndexing(){
+        return ResponseEntity.ok(indexingService.stopIndexing());
     }
 
-    @GetMapping(value = "/search")
-    public ResponseEntity<?> search(@RequestParam @Nullable String query, @RequestParam @Nullable String site,
-                                    @RequestParam(defaultValue = "0") int offset, @RequestParam(defaultValue = "20") int limit){
+    @PostMapping(value = "/indexPage", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> indexPage(@RequestParam String url){
         try{
-            SearchResponse response = searchService.search(query,site,offset,limit);
-            if (response.isResult()) {
-                return new ResponseEntity<>(response, HttpStatus.OK);
-            }else {
-                return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-            }
+            return new ResponseEntity<>(lemmaFinderService.indexingPage(url), HttpStatus.OK);
         }catch (Exception ex){
-            ex.printStackTrace();
-            SearchResponse response = new SearchResponse();
-            response.setResult(false);
-            response.setError("Указанная страница не найдена");
-            return new ResponseEntity<>(response,HttpStatus.INTERNAL_SERVER_ERROR);
+            log.error(ex);
+            return new ResponseEntity<>(new FalseResponse(false,
+                    "Данная страница находится за пределами сайтов, " +
+                    "указанных в конфигурационном файле"),
+                    HttpStatus.NOT_FOUND);
         }
     }
 
-    @PostMapping(value = "/indexPage")
-    public ResponseEntity<?> indexPage(@RequestParam String url) {
+    @GetMapping("/search")
+    public ResponseEntity<?> search(@RequestParam @NonNull String query, @RequestParam @Nullable String site,
+                                    @RequestParam(defaultValue = "0") int offset,
+                                    @RequestParam(defaultValue = "20") int limit){
         try{
-            LemmaResponse response = lemmaFinderService.indexingPage(url);
-            return new ResponseEntity<>(response, HttpStatus.OK);
-        }catch (Exception e){
-            e.printStackTrace();
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(searchService.search(query,site,offset,limit), HttpStatus.OK);
+        }catch (Exception ex){
+            log.error(ex);
+            return new ResponseEntity<>(new FalseResponse(false,
+                    "Указанная страница не найдена"),
+                    HttpStatus.NOT_FOUND);
         }
     }
 }
