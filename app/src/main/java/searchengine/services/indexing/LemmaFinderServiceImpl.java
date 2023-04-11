@@ -22,11 +22,13 @@ import searchengine.services.JsoupConnect;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
+import static searchengine.services.JsoupConnect.getContentFromUrl;
+import static searchengine.services.JsoupConnect.getStatusCodeConnecting;
 
 @Log4j2
 @Service
 @RequiredArgsConstructor
-public class LemmaFinderServiceIml implements LemmaFinderService {
+public class LemmaFinderServiceImpl implements LemmaFinderService {
     @Autowired
     private SiteRepository siteRepository;
     @Autowired
@@ -37,49 +39,39 @@ public class LemmaFinderServiceIml implements LemmaFinderService {
     private IndexRepository indexRepository;
 
     @Override
-    public AppResponse indexingPage(String url) throws IOException, InterruptedException {
+    public AppResponse indexingPage(String url) throws IOException {
         AppResponse response;
         String fullHost = new URL(url).getProtocol() + "://" +  new URL(url).getHost() + "/";
+        Document document = new JsoupConnect(url).connectUrl();
         String link = new JsoupConnect(url).getSimplePath();
         SiteEntity siteEntity = siteRepository.findByUrl(fullHost);
+
         log.info("Индексируем страницу : " + link);
 
-        PageEntity pageEntity = pageRepository.findByPathAndSiteId(link, siteEntity.getSiteId());
-        if (pageEntity != null) {
-            cleanThisPageAndHerLemmasFromDB(pageEntity);
-        }
-        pageEntity = new PageEntity(siteEntity,
-                new JsoupConnect(url).getSimplePath(),
-                new JsoupConnect(url).getStatusCodeConnecting(),
-                new JsoupConnect(url).getContentFromUrl());
+        PageEntity pageEntity = new PageEntity(siteEntity,
+                link,
+                getStatusCodeConnecting(document),
+                getContentFromUrl(document));
         pageRepository.save(pageEntity);
 
         Map<String, Integer> mapLemmaAndRank = calculateLemmas(pageEntity);
-
+        List<IndexEntity> indexEntityList = new ArrayList<>();
+        List<LemmaEntity> lemmaEntityList = new ArrayList<>();
         for (Map.Entry<String, Integer> mapEntryLemmaAndRank : mapLemmaAndRank.entrySet()) {
             LemmaEntity lemmaEntity = lemmaRepository.findByLemmaAndSiteId(mapEntryLemmaAndRank.getKey(), siteEntity.getSiteId());
             if (lemmaEntity != null) {
                 lemmaEntity.setFrequency(lemmaEntity.getFrequency() + 1);
             } else {
-                lemmaEntity = new LemmaEntity(mapEntryLemmaAndRank.getKey(), 1 , siteEntity);
-                lemmaRepository.save(lemmaEntity);
+                lemmaEntity = new LemmaEntity(mapEntryLemmaAndRank.getKey(), 1, siteEntity);
+                lemmaEntityList.add(lemmaEntity);
             }
             IndexEntity indexEntity = new IndexEntity(pageEntity, lemmaEntity, mapEntryLemmaAndRank.getValue());
-            indexRepository.save(indexEntity);
+            indexEntityList.add(indexEntity);
         }
+        lemmaRepository.saveAll(lemmaEntityList);
+        indexRepository.saveAll(indexEntityList);
         response = new TrueResponse(true);
         return response;
-    }
-
-    private void cleanThisPageAndHerLemmasFromDB(PageEntity pageEntity){
-        List<IndexEntity> indexEntityList = indexRepository.findByPageId(pageEntity.getPageId());
-        if (!indexEntityList.isEmpty()) {
-            for (IndexEntity indexEntity : indexEntityList){
-                indexEntity.getLemma().setFrequency(indexEntity.getLemma().getFrequency() - 1);
-            }
-            indexRepository.multiDeleteByPage(pageEntity.getPageId());
-            pageRepository.deletePageById(pageEntity.getPageId());
-        }
     }
 
     private HashMap<String, Integer> calculateLemmas(PageEntity page) throws IOException {
@@ -113,5 +105,4 @@ public class LemmaFinderServiceIml implements LemmaFinderService {
         outputBuilder.append(jsoupDoc.body().text());
         return outputBuilder.toString();
     }
-
 }

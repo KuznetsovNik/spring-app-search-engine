@@ -6,13 +6,9 @@ import org.apache.lucene.morphology.LuceneMorphology;
 import org.apache.lucene.morphology.russian.RussianLuceneMorphology;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import searchengine.model.LemmaEntity;
 import searchengine.model.PageEntity;
-import searchengine.services.indexing.LemmaFinderServiceIml;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 @Log4j2
 @Data
@@ -41,21 +37,25 @@ public class PageDto implements Comparable<PageDto>{
     }
 
     private static String getSnippet(PageEntity page,String lemma){
-        String snippet = LemmaFinderServiceIml.cleaningHTMLContent(page);
-        int indexLemma = snippet.indexOf(findLemmaInContext(page,lemma));
-        int size = snippet.length();
-        if (size < indexLemma + 200){
+        Document document = Jsoup.parse(page.getContent());
+        String content = Jsoup.parse(document.html()).text().toLowerCase(Locale.ROOT);
+        String rareWord = getIndexLemma(content,lemma);
+        int indexLemma = content.indexOf(rareWord);
+        int lemmaLength = rareWord.length();
+        int size = content.length();
+        if (size <= indexLemma + 200){
             size = size - indexLemma;
         }else{
             size = 200;
         }
-        if (indexLemma == -1){
-            indexLemma = size / 2;
+        int startSnippet = indexLemma - size/2;
+        if (startSnippet < 0){
+            startSnippet = 0;
         }
         StringBuilder outputBuilder = new StringBuilder();
-        String snippetFirstPart = snippet.substring(indexLemma - size/2 , indexLemma);
-        String word = snippet.substring(indexLemma,indexLemma + lemma.length());
-        String snippetEndPart = snippet.substring(indexLemma + lemma.length(), indexLemma + size/2);
+        String snippetFirstPart = content.substring(startSnippet , indexLemma);
+        String word = content.substring(indexLemma,indexLemma + lemmaLength);
+        String snippetEndPart = content.substring(indexLemma + lemmaLength, indexLemma + size/2);
         outputBuilder.append(snippetFirstPart).append("<b>").append(word).append("</b>").append(snippetEndPart);
         return outputBuilder.toString();
     }
@@ -69,13 +69,12 @@ public class PageDto implements Comparable<PageDto>{
         this.setRelevance(this.getRelevance()/biggerRelevance);
     }
 
-    public static String findLemmaInContext(PageEntity page, String lemma){
+    public static String getIndexLemma(String content, String lemma){
         try {
             luceneMorph = new RussianLuceneMorphology();
         } catch (IOException e) {
             log.error(e.getMessage());
         }
-        String content = LemmaFinderServiceIml.cleaningHTMLContent(page);
         String[] words = content.toLowerCase(Locale.ROOT).split("[^а-я]");
         for (String word : words) {
             if (!word.isEmpty()) {

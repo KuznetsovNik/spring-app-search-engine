@@ -10,8 +10,8 @@ import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.*;
 import searchengine.dto.appResponse.FalseResponse;
 import searchengine.dto.statistics.StatisticsResponse;
+import searchengine.services.indexing.IndexingOnePageService;
 import searchengine.services.indexing.IndexingService;
-import searchengine.services.indexing.LemmaFinderService;
 import searchengine.services.search.SearchService;
 import searchengine.services.statistics.StatisticsService;
 
@@ -23,8 +23,8 @@ public class ApiController {
 
     private final StatisticsService statisticsService;
     private final IndexingService indexingService;
-    private final LemmaFinderService lemmaFinderService;
     private final SearchService searchService;
+    private final IndexingOnePageService indexingOnePageService;
 
     @GetMapping("/statistics")
     public ResponseEntity<StatisticsResponse> statistics() {
@@ -44,7 +44,7 @@ public class ApiController {
     @PostMapping(value = "/indexPage", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> indexPage(@RequestParam String url){
         try{
-            return new ResponseEntity<>(lemmaFinderService.indexingPage(url), HttpStatus.OK);
+            return new ResponseEntity<>(indexingOnePageService.indexingOnePage(url), HttpStatus.OK);
         }catch (Exception ex){
             log.error(ex);
             return new ResponseEntity<>(new FalseResponse(false,

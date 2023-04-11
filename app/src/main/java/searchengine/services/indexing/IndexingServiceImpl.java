@@ -14,11 +14,7 @@ import searchengine.repositories.IndexRepository;
 import searchengine.repositories.LemmaRepository;
 import searchengine.repositories.PageRepository;
 import searchengine.repositories.SiteRepository;
-import searchengine.services.JsoupConnect;
 import searchengine.services.LinksRecursiveTasking;
-
-import java.io.IOException;
-import java.net.MalformedURLException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
@@ -60,7 +56,9 @@ public class IndexingServiceImpl implements IndexingService {
 
             List<String> listLinks = forkJoinPool.invoke(new LinksRecursiveTasking(site.getUrl(), firstStart));
             log.info(listLinks);
-            for (String link : listLinks) {
+            log.info("Колличество ссылок: " + listLinks.size());
+
+            for (int i = 1; i < listLinks.size(); i++) {
                 if (forkJoinPool.isShutdown()){
                     siteEntity.setStatus(Status.FAILED);
                     siteEntity.setLastError("Индексация остановлена пользователем");
@@ -71,9 +69,8 @@ public class IndexingServiceImpl implements IndexingService {
                     return response;
                 }
                 try {
-                    if (isStatusCodeFine(link)) {
-                        indexingPage(link, siteEntity);
-                    }
+                    siteEntity.setStatusTime(LocalDateTime.now());
+                    lemmaFinderService.indexingPage(listLinks.get(i));
                 }catch (Exception ex){
                     siteEntity.setStatus(Status.FAILED);
                     siteEntity.setLastError(ex.getMessage());
@@ -112,18 +109,5 @@ public class IndexingServiceImpl implements IndexingService {
         lemmaRepository.resetIdOnLemmas();
         pageRepository.resetIdOnPage();
         siteRepository.resetIdOnSite();
-    }
-
-    private boolean isStatusCodeFine(String link) throws IOException, InterruptedException {
-        return !String.valueOf(new JsoupConnect(link).getStatusCodeConnecting()).startsWith("4")
-                    || !String.valueOf(new JsoupConnect(link).getStatusCodeConnecting()).startsWith("5");
-    }
-
-    private void indexingPage(String link, SiteEntity siteEntity) throws IOException, InterruptedException {
-        PageEntity pageEntity = pageRepository.findByPathAndSiteId(new JsoupConnect(link).getSimplePath(), siteEntity.getSiteId());
-        if (pageEntity == null) {
-            siteEntity.setStatusTime(LocalDateTime.now());
-            lemmaFinderService.indexingPage(link);
-        }
     }
 }

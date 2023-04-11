@@ -17,5 +17,4 @@ public interface LemmaRepository extends CrudRepository<LemmaEntity, Integer> {
 
     @Query(value = "SELECT * FROM `lemmas` WHERE `lemma` = :lemma AND `sites_id` = :siteId",nativeQuery = true)
     LemmaEntity findByLemmaAndSiteId(String lemma, int siteId);
-
 }

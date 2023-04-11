@@ -12,16 +12,14 @@ spring:
         dialect: org.hibernate.dialect.MySQL8Dialect
     hibernate:
       ddl-auto: update
+      jdbc:
+        batch_size: 10000
 #    show-sql: true
 
 indexing-settings:
   sites:
-    - url: http://cimus.biz/
-      name: Climus
-    - url: https://nikoartgallery.com/
-      name: NikoArtGallery
-#    - url: https://playback.ru/
-#      name: PlayBack.Ru
-#    - url: https://dombulgakova.ru/
-#      name: ДомБулгакова.ру
+    - url: https://www.tretyakovgallery.ru/
+      name: tretyakovgallery.ru
+    - url: http://kuprin-lit.ru/
+      name: kuprin-lit.ru
 

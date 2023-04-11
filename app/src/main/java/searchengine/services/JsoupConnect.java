@@ -11,31 +11,26 @@ import java.net.URL;
 public class JsoupConnect {
     private String url;
 
-    public Document connectUrl() throws IOException, InterruptedException {
-
-        Thread.sleep(100);
-
+    public Document connectUrl() throws IOException {
         Document document = Jsoup.connect(url)
-                .userAgent("Mozilla/5.0 (Windows; U; WindowsNT 5.1; en-US; rv1.8.1.6) Gecko/20070725 Firefox/2.0.0.6")
+                .userAgent("Mozilla/5.0 (WindowsNT 6.1; Win64; x64; rv:25.0) Gecko/20100101 Firefox/25.0")
                 .referrer("http://www.google.com")
                 .ignoreHttpErrors(true)
                 .ignoreContentType(true)
                 .followRedirects(false)
                 .timeout(0)
                 .get();
-
         return document;
     }
-    public String getContentFromUrl() throws IOException, InterruptedException {
+
+    public static String getContentFromUrl(Document document) {
         String content = "";
-        Document document = connectUrl();
         content = document.outerHtml();
         return content;
     }
 
-    public int getStatusCodeConnecting() throws IOException, InterruptedException {
+    public static int getStatusCodeConnecting(Document document) {
         int code;
-        Document document = connectUrl();
         code = document.connection().response().statusCode();
         return code;
     }
