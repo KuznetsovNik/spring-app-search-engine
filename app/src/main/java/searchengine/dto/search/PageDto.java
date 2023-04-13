@@ -7,6 +7,7 @@ import org.apache.lucene.morphology.russian.RussianLuceneMorphology;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import searchengine.model.PageEntity;
+
 import java.io.IOException;
 import java.util.*;
 
@@ -43,21 +44,26 @@ public class PageDto implements Comparable<PageDto>{
         int indexLemma = content.indexOf(rareWord);
         int lemmaLength = rareWord.length();
         int size = content.length();
-        if (size <= indexLemma + 200){
+        if (size <= indexLemma + 200) {
             size = size - indexLemma;
-        }else{
+        } else {
             size = 200;
         }
         int startSnippet = indexLemma - size/2;
-        if (startSnippet < 0){
+        if (startSnippet < 0) {
             startSnippet = 0;
+        }
+        int endSnippet = indexLemma + size/2;
+        if (endSnippet < indexLemma + lemmaLength) {
+            endSnippet = content.length();
         }
         StringBuilder outputBuilder = new StringBuilder();
         String snippetFirstPart = content.substring(startSnippet , indexLemma);
         String word = content.substring(indexLemma,indexLemma + lemmaLength);
-        String snippetEndPart = content.substring(indexLemma + lemmaLength, indexLemma + size/2);
+        String snippetEndPart = content.substring(indexLemma + lemmaLength, endSnippet);
         outputBuilder.append(snippetFirstPart).append("<b>").append(word).append("</b>").append(snippetEndPart);
-        return outputBuilder.toString();
+        String snippet = outputBuilder.substring(0,outputBuilder.toString().lastIndexOf(" "));
+        return snippet.replaceFirst("([а-яa-z\\,\\:\\!\\.]+)\\s{1}","");
     }
 
     @Override

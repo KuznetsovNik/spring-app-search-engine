@@ -15,8 +15,11 @@ import searchengine.repositories.LemmaRepository;
 import searchengine.repositories.PageRepository;
 import searchengine.repositories.SiteRepository;
 import searchengine.services.LinksRecursiveTasking;
+
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 
 @Log4j2
@@ -35,6 +38,7 @@ public class IndexingServiceImpl implements IndexingService {
     private final SitesList sitesList;
     private ForkJoinPool forkJoinPool = new ForkJoinPool();
     private boolean firstStart = true;
+
     private final LemmaFinderService lemmaFinderService;
 
     @Override
@@ -51,6 +55,7 @@ public class IndexingServiceImpl implements IndexingService {
 
         List<Site> siteList = sitesList.getSites();
         for (Site site : siteList) {
+
             SiteEntity siteEntity = new SiteEntity(site.getUrl(),site.getName(),Status.INDEXING,LocalDateTime.now());
             siteRepository.save(siteEntity);
 
@@ -59,7 +64,7 @@ public class IndexingServiceImpl implements IndexingService {
             log.info("Колличество ссылок: " + listLinks.size());
 
             for (int i = 1; i < listLinks.size(); i++) {
-                if (forkJoinPool.isShutdown()){
+                if (forkJoinPool.isShutdown()) {
                     siteEntity.setStatus(Status.FAILED);
                     siteEntity.setLastError("Индексация остановлена пользователем");
                     siteRepository.save(siteEntity);
@@ -71,7 +76,7 @@ public class IndexingServiceImpl implements IndexingService {
                 try {
                     siteEntity.setStatusTime(LocalDateTime.now());
                     lemmaFinderService.indexingPage(listLinks.get(i));
-                }catch (Exception ex){
+                } catch (Exception ex) {
                     siteEntity.setStatus(Status.FAILED);
                     siteEntity.setLastError(ex.getMessage());
                     siteRepository.save(siteEntity);

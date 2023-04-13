@@ -12,6 +12,7 @@ import searchengine.dto.appResponse.FalseResponse;
 import searchengine.dto.statistics.StatisticsResponse;
 import searchengine.services.indexing.IndexingOnePageService;
 import searchengine.services.indexing.IndexingService;
+import searchengine.services.indexing.LemmaFinderService;
 import searchengine.services.search.SearchService;
 import searchengine.services.statistics.StatisticsService;
 
@@ -23,7 +24,9 @@ public class ApiController {
 
     private final StatisticsService statisticsService;
     private final IndexingService indexingService;
+    private final LemmaFinderService lemmaFinderService;
     private final SearchService searchService;
+
     private final IndexingOnePageService indexingOnePageService;
 
     @GetMapping("/statistics")
@@ -43,9 +46,9 @@ public class ApiController {
 
     @PostMapping(value = "/indexPage", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> indexPage(@RequestParam String url){
-        try{
+        try {
             return new ResponseEntity<>(indexingOnePageService.indexingOnePage(url), HttpStatus.OK);
-        }catch (Exception ex){
+        } catch (Exception ex) {
             log.error(ex);
             return new ResponseEntity<>(new FalseResponse(false,
                     "Данная страница находится за пределами сайтов, " +
@@ -58,9 +61,9 @@ public class ApiController {
     public ResponseEntity<?> search(@RequestParam @NonNull String query, @RequestParam @Nullable String site,
                                     @RequestParam(defaultValue = "0") int offset,
                                     @RequestParam(defaultValue = "20") int limit){
-        try{
+        try {
             return new ResponseEntity<>(searchService.search(query,site,offset,limit), HttpStatus.OK);
-        }catch (Exception ex){
+        } catch (Exception ex) {
             log.error(ex);
             return new ResponseEntity<>(new FalseResponse(false,
                     "Указанная страница не найдена"),

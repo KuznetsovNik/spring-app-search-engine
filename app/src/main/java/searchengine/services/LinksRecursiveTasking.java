@@ -20,16 +20,16 @@ public class LinksRecursiveTasking extends RecursiveTask<List<String>> {
         try {
             listLinks.add(url);
             List<String> linksList = new ArrayList<>(SiteParser.parserUtils(url, firstStart));
-            for (String thisUrl : linksList){
+            for (String thisUrl : linksList) {
                 linksTasking.add(new LinksRecursiveTasking(thisUrl,firstStart));
             }
-            for (LinksRecursiveTasking linksTasker : linksTasking){
+            for (LinksRecursiveTasking linksTasker : linksTasking) {
                 linksTasker.fork();
             }
             for (LinksRecursiveTasking linksTasker : linksTasking) {
                 listLinks.addAll(linksTasker.join());
             }
-        }catch (Exception ex){
+        } catch (Exception ex) {
             log.error(ex.getMessage());
         }
         return listLinks;

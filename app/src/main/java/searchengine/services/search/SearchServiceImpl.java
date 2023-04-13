@@ -47,12 +47,12 @@ public class SearchServiceImpl implements SearchService{
                 pageDtoList.addAll(getAllPageDto(siteId, searchQuery,false));
                 response.setResult(true);
                 response.setCount(pageDtoList.size());
-                if (pageDtoList.size() > searchLimit){
+                if (pageDtoList.size() > searchLimit) {
                     pageDtoList = pageDtoList.subList(searchOffset,searchLimit);
                 }
                 response.setData(pageDtoList);
             }
-        }else{
+        } else {
             for (int i = 1; i <= siteRepository.count(); i++) {
                 log.info("Ведем поиск по сайту: " + siteRepository.findById(i).get().getName());
                 pageDtoList.addAll(getAllPageDto(i, searchQuery,true));
@@ -61,7 +61,7 @@ public class SearchServiceImpl implements SearchService{
             response.setCount(pageDtoList.size());
             float biggerRelevance = pageDtoList.stream().sorted().findFirst().get().getRelevance();
             pageDtoList.forEach(pageDto -> pageDto.calculateRelToAbsRelevance(biggerRelevance));
-            if (pageDtoList.size() > searchLimit){
+            if (pageDtoList.size() > searchLimit) {
                 pageDtoList = pageDtoList.subList(searchOffset,searchLimit);
             }
             response.setData(pageDtoList.stream().sorted().collect(Collectors.toList()));
@@ -87,7 +87,7 @@ public class SearchServiceImpl implements SearchService{
             Map<Integer, Float> mapPageIdAndTotalRelevance = calculationMapPageAbsRelevance(setPagesIdHavingTargetLemma, listMapEntryLemmasAndTheirFrequency, siteId);
             List<Integer> sortedListPagesIdByRelevance = sortingListPagesIdByRelevance(mapPageIdAndTotalRelevance);
             return getMapperPageDto(sortedListPagesIdByRelevance, pageAndLemmaMap, mapPageIdAndTotalRelevance);
-        }else{
+        } else {
             Map<Integer, Float> mapPageIdAndRelativeRelevance = calculationMapPageIdAndRelRelevance(setPagesIdHavingTargetLemma, listMapEntryLemmasAndTheirFrequency, siteId);
             List<Integer> sortedListPagesIdByRelevance = sortingListPagesIdByRelevance(mapPageIdAndRelativeRelevance);
             return getMapperPageDto(sortedListPagesIdByRelevance, pageAndLemmaMap, mapPageIdAndRelativeRelevance);
@@ -115,7 +115,7 @@ public class SearchServiceImpl implements SearchService{
                             mapLemmaAndFrequency.put(normalWord, lemma.getFrequency());
                         }
                     }
-                }else{
+                } else {
                     lemma = lemmaRepository.findByLemmaAndSiteId(normalWord, siteId);
                     if (lemma != null) {
                         mapLemmaAndFrequency.put(normalWord, lemma.getFrequency());
@@ -135,7 +135,7 @@ public class SearchServiceImpl implements SearchService{
     private Map<Integer, Float> calculationMapPageAbsRelevance(Set<Integer> setPagesIdHavingTargetLemma, List<Map.Entry<String, Integer>> listMapEntryLemmasAndTheirFrequency, int siteId){
         Map<Integer, Float> mapPageIdAndTotalRelevance = new HashMap<>();
         float biggerAbsRel = 0.0f;
-        for (Integer pageId : setPagesIdHavingTargetLemma){
+        for (Integer pageId : setPagesIdHavingTargetLemma) {
             float absoluteRelevance = 0.0f;
             for (Map.Entry<String, Integer> EntryLemmasAndTheirFrequency : listMapEntryLemmasAndTheirFrequency) {
                 String lemma = EntryLemmasAndTheirFrequency.getKey();
@@ -145,7 +145,7 @@ public class SearchServiceImpl implements SearchService{
                     absoluteRelevance += indexEntity.getRankT();
                 }
             }
-            if (absoluteRelevance > biggerAbsRel){
+            if (absoluteRelevance > biggerAbsRel) {
                 biggerAbsRel = absoluteRelevance;
             }
             mapPageIdAndTotalRelevance.put(pageId, absoluteRelevance);
@@ -166,7 +166,7 @@ public class SearchServiceImpl implements SearchService{
 
     private List<PageDto> getMapperPageDto(List<Integer> sortedListPagesIdByRelevance, Map<Integer,String> pageAndLemmaMap, Map<Integer, Float> mapPageIdAndTotalRelevance) {
         List<PageDto> pageDtoList = new ArrayList<>();
-        for (Integer pageId : sortedListPagesIdByRelevance){
+        for (Integer pageId : sortedListPagesIdByRelevance) {
             PageDto pageDto = PageDto.getPageDtoFromEntity(
                     pageRepository.findPageById(pageId),
                     pageAndLemmaMap.get(pageId),
@@ -178,7 +178,7 @@ public class SearchServiceImpl implements SearchService{
 
     private Map<Integer, Float> calculationMapPageIdAndRelRelevance(Set<Integer> setPagesIdHavingTargetLemma, List<Map.Entry<String, Integer>> listMapEntryLemmasAndTheirFrequency, int siteId){
         Map<Integer, Float> mapPageIdRelRelevance = new HashMap<>();
-        for (Integer pageId : setPagesIdHavingTargetLemma){
+        for (Integer pageId : setPagesIdHavingTargetLemma) {
             float relativeRelevance = 0.0f;
             for (Map.Entry<String, Integer> EntryLemmasAndTheirFrequency : listMapEntryLemmasAndTheirFrequency) {
                 String lemma = EntryLemmasAndTheirFrequency.getKey();

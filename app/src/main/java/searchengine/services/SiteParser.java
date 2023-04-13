@@ -11,11 +11,13 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
+import static searchengine.services.JsoupConnect.getStatusCodeConnecting;
+
 public class SiteParser {
     private static HashSet<String> uniqueUrl = new HashSet<>();
 
     public static List<String> parserUtils(String url,boolean firstStart) throws IOException, InterruptedException {
-        if (!firstStart){
+        if (!firstStart) {
             uniqueUrl = new HashSet<>();
         }
         String [] hostArray = new URL(url).getAuthority().split("\\.");
